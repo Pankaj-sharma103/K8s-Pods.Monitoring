@@ -1,0 +1,64 @@
+This process explain that how to setup Prometheus and Grafana  for Pods in Kops K8s Cluster
+-------------------------------------------------------------------------------------------
+Create Kops cluster : multi node cluster
+#sh kopscluster.sh
+------------------------------------------
+Generally all the cluster related data store on local machine but what if something goes wrong with local machine - all data gone
+Store cluster entire information at s3 so create a bucket and enable versioning for backup
+#sh s3-cluster-state.sh
+note: must change bucket name in file
+-----------------------------------------
+Install Helm : package manager for K8s used to download applicaion in k8s cluster
+#sh helm.sh
+-----------------------------------------
+Install Metric-Server : Metric Server will collect the memory and cpu metric from kubelet and expose them through K8s Metric API
+#sh metric-server-sh
+-----------------------------------------
+
+============================================
+SETUP AND INSTALL PROMETHEUS AND GRAGANA NOW
+============================================
+
+Add prometheus and grafana chart to helm repo -----
+#sh add-PG.sh
+
+CREATE PROMETHEUS NAMESPACE AND INSTALL PROMETHEUS HERE
+======================================================
+#kubectl create ns prometheus
+#sh prometheus.sh
+#kubectl get all -n prometheus
+
+Note: commands already present in file if you create ns manually remove line in file or just run ===prometheus.sh===
+
+CREATE GRAFANA NAMESPACE AND INSTALL GRAFANA HERE
+=================================================
+#kubectl create na grafana
+#sh grafana.sh
+#kubectl get ll -n grafana
+
+Note: commands already present in file if you create ns manually remove line in file or just run ===grafana.sh===
+
+In grafana.sh -- we expose the service through LoadBlancer - take LB DNS-name put it in browser to access Grafana
+=========================================================
+username=admin
+adminPassword=Root123456
+========================================================
+
+Note: since grafana namespace is separate from prometheus, you'll need to connect Grafana to Prometheus as a data source
+---flow
+grafana dashboard --> add the data source --> select prometheus --> paste url- 
+||http://prometheus-server.prometheus.svc.cluster.local|| --> save & test
+
+
+Import Grafana Dashboard to visualize data into graphs and monitor Pods and Cluster
+---flow
+dashboard --> new --> import --> 6417  --> load --> select prometheus --> import
+
+MORE DASHBOARD IDs -----------
+315 -> cluster monitoring
+1860 -> to monitor nodes indivisually
+11454 ->  pv & pvc
+747 -> pod metrics
+14623 -> K8s Overview
+10907 -> monitor api-Server
+
